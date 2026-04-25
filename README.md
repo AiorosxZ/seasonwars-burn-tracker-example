@@ -9,7 +9,7 @@ in under 30 minutes, using only on-chain data.
 Example: burn the wrong token → lose ~20% efficiency instantly
 (no way to recover once executed)
 
-→ Open index.html
+→ [Live demo](https://aiorosxz.github.io/seasonwars-burn-tracker-example)
 → Watch live burns update every few seconds using on-chain events
 → Simulate your first strategy
 
@@ -174,5 +174,6 @@ on-chain strategy applications.
 [xzod.io](https://xzod.io) ·
 [Whitepaper](https://xzod.io/whitepaper) ·
 [github.com/AiorosxZ/xzod-contracts](https://github.com/AiorosxZ/xzod-contracts)
+[Live demo](https://aiorosxz.github.io/seasonwars-burn-tracker-example)
 
 *"In Zod we trust."* 🔥
