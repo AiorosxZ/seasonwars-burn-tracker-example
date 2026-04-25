@@ -1,0 +1,592 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0A0C10;
+    --surface: #0F1318;
+    --surface2: #161B22;
+    --border: #1E2530;
+    --orange: #F97316;
+    --red: #EF4444;
+    --blue: #60A5FA;
+    --purple: #A78BFA;
+    --green: #34D399;
+    --text: #E2E8F0;
+    --muted: #64748B;
+    --hot: #F97316;
+    --cold: #60A5FA;
+    --opp: #A78BFA;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(249,115,22,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .logo { display: flex; align-items: center; gap: 10px; }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--orange), #DC2626);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text { font-size: 20px; font-weight: 800; color: white; }
+  .logo-sub { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 1px; }
+
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    background: rgba(52,211,153,0.1);
+    border: 1px solid rgba(52,211,153,0.2);
+    border-radius: 20px;
+    font-size: 11px; font-family: 'Space Mono', monospace; color: var(--green);
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--green); border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .build-cta {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    background: rgba(249,115,22,0.12);
+    border: 1px solid rgba(249,115,22,0.3);
+    border-radius: 20px;
+    font-size: 11px; font-family: 'Space Mono', monospace; color: var(--orange);
+    cursor: pointer; text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .build-cta:hover { background: rgba(249,115,22,0.2); border-color: rgba(249,115,22,0.5); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .signs-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+
+  .sign-card { padding: 14px 16px; border-radius: 12px; border: 1px solid; display: flex; flex-direction: column; gap: 4px; }
+  .sign-card.hot { background: rgba(249,115,22,0.08); border-color: rgba(249,115,22,0.25); }
+  .sign-card.cold { background: rgba(96,165,250,0.08); border-color: rgba(96,165,250,0.25); }
+  .sign-card.opp { background: rgba(167,139,250,0.08); border-color: rgba(167,139,250,0.25); }
+
+  .sign-label { font-size: 10px; font-family: 'Space Mono', monospace; font-weight: 700; letter-spacing: 1px; }
+  .hot .sign-label { color: var(--hot); }
+  .cold .sign-label { color: var(--cold); }
+  .opp .sign-label { color: var(--opp); }
+  .sign-name { font-size: 18px; font-weight: 800; color: white; }
+  .sign-meta { font-size: 10px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+
+  .panel-header {
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .panel-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; font-family: 'Space Mono', monospace; }
+  .panel-count { font-size: 10px; font-family: 'Space Mono', monospace; color: var(--orange); background: rgba(249,115,22,0.1); padding: 2px 8px; border-radius: 10px; }
+
+  .feed { height: 300px; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+  .feed::-webkit-scrollbar { width: 3px; }
+  .feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .burn-item {
+    padding: 10px 12px; border-radius: 8px; background: var(--surface2);
+    display: flex; align-items: center; gap: 10px;
+    border: 1px solid transparent; transition: border-color 0.2s;
+  }
+  .burn-item:hover { border-color: var(--border); }
+  .burn-item.new { animation: newBurn 0.5s ease-out; }
+
+  @keyframes newBurn {
+    0% { opacity: 0; transform: translateY(-8px); background: rgba(249,115,22,0.15); }
+    50% { background: rgba(249,115,22,0.08); }
+    100% { opacity: 1; transform: translateY(0); background: var(--surface2); }
+  }
+
+  .burn-emoji { font-size: 16px; flex-shrink: 0; }
+  .burn-info { flex: 1; min-width: 0; }
+  .burn-addr { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .burn-detail { font-size: 10px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 2px; }
+  .burn-pts { font-size: 13px; font-weight: 700; color: var(--orange); font-family: 'Space Mono', monospace; flex-shrink: 0; white-space: nowrap; }
+  .burn-mult { font-size: 9px; color: var(--green); font-family: 'Space Mono', monospace; text-align: right; }
+
+  .leaderboard { padding: 8px; display: flex; flex-direction: column; gap: 4px; height: 300px; overflow-y: auto; }
+
+  .clan-row { padding: 8px 12px; border-radius: 8px; background: var(--surface2); display: flex; align-items: center; gap: 10px; }
+  .clan-rank { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--muted); width: 20px; flex-shrink: 0; text-align: center; }
+  .clan-rank.top1 { color: #FFD700; }
+  .clan-rank.top2 { color: #C0C0C0; }
+  .clan-rank.top3 { color: #CD7F32; }
+  .clan-sign { font-size: 15px; flex-shrink: 0; }
+  .clan-name { font-size: 12px; font-weight: 700; color: var(--text); flex: 1; }
+  .clan-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .clan-bar { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+  .clan-pts { font-size: 10px; font-family: 'Space Mono', monospace; color: var(--orange); width: 60px; text-align: right; flex-shrink: 0; }
+
+  /* Simulator */
+  .simulator { padding: 16px; }
+  .sim-tagline { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--orange); margin-bottom: 14px; letter-spacing: 1px; }
+
+  .sim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+  .sim-field label { display: block; font-size: 10px; font-family: 'Space Mono', monospace; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.5px; }
+
+  .sim-field input, .sim-field select {
+    width: 100%; padding: 10px 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    font-family: 'Space Mono', monospace; font-size: 12px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .sim-field input:focus, .sim-field select:focus { border-color: var(--orange); }
+  .sim-field select option { background: var(--surface2); }
+
+  .sim-result {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px; margin-bottom: 10px;
+  }
+
+  .sim-result-item { text-align: center; }
+  .sim-result-value { font-size: 22px; font-weight: 800; color: var(--orange); font-family: 'Space Mono', monospace; line-height: 1; }
+  .sim-result-value.highlight { background: linear-gradient(135deg, var(--orange), #DC2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .sim-result-label { font-size: 10px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 4px; }
+
+  .sim-bonus-tag { font-size: 10px; padding: 3px 8px; border-radius: 10px; font-family: 'Space Mono', monospace; font-weight: 700; }
+  .sim-bonus-tag.cold { background: rgba(96,165,250,0.15); color: var(--cold); border: 1px solid rgba(96,165,250,0.2); }
+  .sim-bonus-tag.opp { background: rgba(167,139,250,0.15); color: var(--opp); border: 1px solid rgba(167,139,250,0.2); }
+  .sim-bonus-tag.none { background: rgba(100,116,139,0.15); color: var(--muted); border: 1px solid var(--border); }
+
+  /* Context message */
+  .sim-context {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    border: 1px solid;
+  }
+  .sim-context.cold { background: rgba(96,165,250,0.08); border-color: rgba(96,165,250,0.2); color: var(--cold); }
+  .sim-context.opp  { background: rgba(167,139,250,0.08); border-color: rgba(167,139,250,0.2); color: var(--opp); }
+  .sim-context.hot  { background: rgba(249,115,22,0.08); border-color: rgba(249,115,22,0.2); color: var(--hot); }
+  .sim-context.none { background: rgba(100,116,139,0.08); border-color: var(--border); color: var(--muted); }
+
+  /* Optimal suggestion */
+  .sim-optimal {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(52,211,153,0.06);
+    border: 1px solid rgba(52,211,153,0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+  }
+  .sim-optimal-label { color: var(--green); font-weight: 700; flex-shrink: 0; }
+  .sim-optimal-text { color: var(--text); flex: 1; }
+  .sim-optimal-sub { color: var(--muted); font-size: 10px; margin-top: 2px; }
+
+  /* Stats */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+  @media (max-width: 640px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
+  .stat-value { font-size: 20px; font-weight: 800; color: var(--orange); font-family: 'Space Mono', monospace; line-height: 1; }
+  .stat-label { font-size: 10px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 4px; letter-spacing: 0.5px; }
+
+  .full-panel { margin-bottom: 14px; }
+
+  .cycle-info { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .cycle-label { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--muted); }
+  .cycle-value { font-size: 12px; font-family: 'Space Mono', monospace; color: var(--text); font-weight: 700; }
+  .progress-wrap { width: 100%; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin: 0 16px 14px; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--orange), #DC2626); border-radius: 2px; width: 62%; }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid var(--border);
+    margin-top: 16px;
+    padding-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .footer-left { font-size: 10px; font-family: 'Space Mono', monospace; color: var(--muted); line-height: 1.7; }
+  .footer-left span { color: var(--orange); }
+
+  .footer-links { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .footer-link {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .footer-link:hover { border-color: var(--orange); color: var(--orange); }
+  .footer-link.primary { border-color: rgba(249,115,22,0.3); color: var(--orange); background: rgba(249,115,22,0.08); }
+  .footer-link.primary:hover { background: rgba(249,115,22,0.15); }
+
+  .verified-dot { width: 5px; height: 5px; background: var(--green); border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🔥</div>
+      <div>
+        <div class="logo-text">xZod Burn Tracker</div>
+        <div class="logo-sub">SeasonWars V2.3 · Cycle #4 · Sepolia Testnet</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+      <a class="build-cta" href="https://github.com/AiorosxZ/xzod-contracts" target="_blank">
+        Build this yourself →
+      </a>
+    </div>
+  </div>
+
+  <!-- Cycle -->
+  <div class="panel full-panel">
+    <div class="cycle-info">
+      <div><div class="cycle-label">CYCLE START</div><div class="cycle-value">Apr 13, 2026 · 00:22 UTC</div></div>
+      <div style="text-align:center"><div class="cycle-label">DAYS REMAINING</div><div class="cycle-value" style="color:var(--orange)">11d 7h 34m</div></div>
+      <div style="text-align:right"><div class="cycle-label">FULL MOON</div><div class="cycle-value">May 12, 2026 · 16:56 UTC</div></div>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar"></div></div>
+  </div>
+
+  <!-- Signs -->
+  <div class="signs-bar">
+    <div class="sign-card hot">
+      <div class="sign-label">🔥 HOT · 8% APY</div>
+      <div class="sign-name">♉ Taurus</div>
+      <div class="sign-meta">Apr 20 → May 20</div>
+    </div>
+    <div class="sign-card cold">
+      <div class="sign-label">❄️ COLD · 2% APY · ×1.2 burn</div>
+      <div class="sign-name">♈ Aries</div>
+      <div class="sign-meta">Best burn efficiency this cycle</div>
+    </div>
+    <div class="sign-card opp">
+      <div class="sign-label">🔮 OPPOSITE · 4% APY · ×1.1 burn</div>
+      <div class="sign-name">♏ Scorpio</div>
+      <div class="sign-meta">6 signs from HOT</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-value" id="totalBurned">847K</div><div class="stat-label">TOTAL BURNED</div></div>
+    <div class="stat-card"><div class="stat-value" id="players">142</div><div class="stat-label">ACTIVE PLAYERS</div></div>
+    <div class="stat-card"><div class="stat-value">20%</div><div class="stat-label">PERM BURN RATE</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--opp)">♏ ZSCO</div><div class="stat-label">REWARD TOKEN</div></div>
+  </div>
+
+  <!-- Feed + Leaderboard -->
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">🔥 Live Burn Feed</div>
+        <div class="panel-count" id="feedCount">0 burns</div>
+      </div>
+      <div class="feed" id="feed">
+        <div style="text-align:center;color:var(--muted);padding:40px;font-family:'Space Mono',monospace;font-size:11px;">Listening for burns...</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">🏆 Clan Leaderboard</div>
+        <div class="panel-count">Weighted Score</div>
+      </div>
+      <div class="leaderboard" id="leaderboard"></div>
+    </div>
+  </div>
+
+  <!-- Simulator -->
+  <div class="panel full-panel">
+    <div class="panel-header">
+      <div class="panel-title">⚡ Burn Simulator — quoteBurn()</div>
+      <div class="panel-count">Based on current cycle multipliers</div>
+    </div>
+    <div class="simulator">
+      <div class="sim-tagline">→ SIMULATE BEFORE YOU BURN · PREDICT YOUR POINTS INSTANTLY</div>
+      <div class="sim-grid">
+        <div class="sim-field">
+          <label>AMOUNT (ZOD)</label>
+          <input type="number" id="simAmount" value="1000" min="1" oninput="simulate()">
+        </div>
+        <div class="sim-field">
+          <label>TOKEN TO BURN</label>
+          <select id="simSign" onchange="simulate()">
+            <option value="0">♈ Aries (ZARI) — COLD ×1.2</option>
+            <option value="1">♉ Taurus (ZTAU) — HOT ×1.0</option>
+            <option value="2">♊ Gemini (ZGEM)</option>
+            <option value="3">♋ Cancer (ZCAN)</option>
+            <option value="4">♌ Leo (ZLEO)</option>
+            <option value="5">♍ Virgo (ZVIR)</option>
+            <option value="6">♎ Libra (ZLIB)</option>
+            <option value="7" selected>♏ Scorpio (ZSCO) — OPP ×1.1</option>
+            <option value="8">♐ Sagittarius (ZSAG)</option>
+            <option value="9">♑ Capricorn (ZCAP)</option>
+            <option value="10">♒ Aquarius (ZAQU)</option>
+            <option value="11">♓ Pisces (ZPIS)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Context message -->
+      <div class="sim-context opp" id="simContext">
+        🔮 You are burning an OPPOSITE token (+10%) — Scorpio is 6 signs from the current HOT sign. Good efficiency, balanced APY.
+      </div>
+
+      <!-- Result -->
+      <div class="sim-result">
+        <div class="sim-result-item">
+          <div class="sim-result-value" id="simInput">1,000</div>
+          <div class="sim-result-label">AMOUNT IN</div>
+        </div>
+        <div style="color:var(--muted);font-size:20px;">×</div>
+        <div class="sim-result-item">
+          <div class="sim-result-value" id="simMult">1.10</div>
+          <div class="sim-result-label">MULTIPLIER</div>
+        </div>
+        <div style="color:var(--muted);font-size:20px;">=</div>
+        <div class="sim-result-item">
+          <div class="sim-result-value highlight" id="simPoints">1,100</div>
+          <div class="sim-result-label">BURN POINTS</div>
+        </div>
+        <div class="sim-result-item">
+          <span class="sim-bonus-tag opp" id="simBonusTag">+10% OPP BONUS</span>
+        </div>
+      </div>
+
+      <!-- Optimal suggestion -->
+      <div class="sim-optimal">
+        <div>
+          <div class="sim-optimal-label">💡 OPTIMAL RIGHT NOW</div>
+          <div class="sim-optimal-sub">Based on current cycle multipliers</div>
+        </div>
+        <div class="sim-optimal-text">
+          Burn <strong style="color:var(--cold)">♈ Aries (COLD)</strong> → ×1.2 — maximum burn efficiency this cycle
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-left">
+      Built using <span>SeasonWars V2.3 events</span> + <span>quoteBurn()</span><br>
+      <span>github.com/AiorosxZ/xzod-contracts</span> · <span>"In Zod we trust."</span>
+    </div>
+    <div class="footer-links">
+      <a class="footer-link primary" href="https://github.com/AiorosxZ/xzod-contracts" target="_blank">
+        Build this yourself →
+      </a>
+      <a class="footer-link" href="https://sepolia.etherscan.io/address/0x5598778158a66d376bd96243FC6bc27316fD2fc8" target="_blank">
+        <span class="verified-dot"></span> View verified contract
+      </a>
+      <a class="footer-link" href="https://xzod.io/whitepaper" target="_blank">
+        Whitepaper
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SIGNS = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+const NAMES = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+const TOKENS = ['ZARI','ZTAU','ZGEM','ZCAN','ZLEO','ZVIR','ZLIB','ZSCO','ZSAG','ZCAP','ZAQU','ZPIS'];
+const COLORS = ['#EF4444','#F97316','#EAB308','#06B6D4','#F59E0B','#10B981','#60A5FA','#7C3AED','#8B5CF6','#6366F1','#14B8A6','#EC4899'];
+
+const HOT_IDX = 1;
+const COLD_IDX = 0;
+const OPP_IDX = 7;
+
+let clanPts = [42000,28000,15000,38000,22000,9000,31000,67000,18000,11000,25000,7000];
+let feedItems = [];
+let feedCount = 0;
+let totalBurned = 847000;
+
+const ADDRS = ['0x1a2b...3c4d','0x9f8e...7d6c','0x4e5f...6a7b','0xabcd...ef01','0x2345...6789','0xfedc...ba98','0x1357...2468','0x8642...9753','0x1111...2222','0x3333...4444','0x5555...6666','0x7777...8888'];
+
+function getBonusBps(idx) {
+  if (idx === COLD_IDX) return 2000;
+  if (idx === OPP_IDX) return 1000;
+  return 0;
+}
+
+function formatNum(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+  if (n >= 1000) return (n/1000).toFixed(1)+'K';
+  return n.toString();
+}
+
+function addBurn() {
+  const signIdx = Math.floor(Math.random() * 12);
+  const amount = Math.floor(Math.random() * 2000) + 100;
+  const bonusBps = getBonusBps(signIdx);
+  const pts = Math.floor(amount + amount * bonusBps / 10000);
+  const addr = ADDRS[Math.floor(Math.random() * ADDRS.length)];
+  const mult = bonusBps > 0 ? (1 + bonusBps/10000).toFixed(2) : null;
+  const bonus = bonusBps === 2000 ? 'cold' : bonusBps === 1000 ? 'opp' : null;
+
+  clanPts[signIdx] += pts;
+  totalBurned += Math.floor(amount * 0.2);
+  feedCount++;
+
+  feedItems.unshift({ signIdx, amount, pts, addr, mult, bonus });
+  if (feedItems.length > 30) feedItems.pop();
+
+  renderFeed();
+  renderLeaderboard();
+  document.getElementById('totalBurned').textContent = formatNum(totalBurned);
+}
+
+function renderFeed() {
+  document.getElementById('feedCount').textContent = feedCount + ' burns';
+  const feed = document.getElementById('feed');
+  feed.innerHTML = feedItems.map((item, i) => {
+    const bonusTxt = item.bonus === 'cold' ? ' ❄️ ×1.2' : item.bonus === 'opp' ? ' 🔮 ×1.1' : '';
+    return `
+      <div class="burn-item ${i === 0 ? 'new' : ''}">
+        <div class="burn-emoji">${SIGNS[item.signIdx]}</div>
+        <div class="burn-info">
+          <div class="burn-addr">${item.addr}</div>
+          <div class="burn-detail">${item.amount.toLocaleString()} ${TOKENS[item.signIdx]}${bonusTxt}</div>
+        </div>
+        <div>
+          <div class="burn-pts">+${item.pts.toLocaleString()} pts</div>
+          ${item.mult ? `<div class="burn-mult">×${item.mult}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderLeaderboard() {
+  const maxPts = Math.max(...clanPts);
+  const sorted = clanPts.map((p,i) => ({i,p})).sort((a,b) => b.p - a.p);
+  document.getElementById('leaderboard').innerHTML = sorted.map(({i,p}, rank) => {
+    const rankClass = rank===0?'top1':rank===1?'top2':rank===2?'top3':'';
+    const medal = rank===0?'🥇':rank===1?'🥈':rank===2?'🥉':`${rank+1}`;
+    const pct = Math.round(p/maxPts*100);
+    return `
+      <div class="clan-row">
+        <div class="clan-rank ${rankClass}">${medal}</div>
+        <div class="clan-sign">${SIGNS[i]}</div>
+        <div class="clan-name">${NAMES[i]}</div>
+        <div class="clan-bar-wrap"><div class="clan-bar" style="width:${pct}%;background:${COLORS[i]}"></div></div>
+        <div class="clan-pts">${formatNum(p)}</div>
+      </div>`;
+  }).join('');
+}
+
+function simulate() {
+  const amount = parseFloat(document.getElementById('simAmount').value) || 0;
+  const idx = parseInt(document.getElementById('simSign').value);
+  const bonusBps = getBonusBps(idx);
+  const mult = 1 + bonusBps/10000;
+  const pts = Math.floor(amount * mult);
+
+  document.getElementById('simInput').textContent = amount.toLocaleString();
+  document.getElementById('simMult').textContent = mult.toFixed(2);
+  document.getElementById('simPoints').textContent = pts.toLocaleString();
+
+  const tag = document.getElementById('simBonusTag');
+  const ctx = document.getElementById('simContext');
+
+  if (idx === COLD_IDX) {
+    tag.className = 'sim-bonus-tag cold'; tag.textContent = '+20% COLD BONUS';
+    ctx.className = 'sim-context cold';
+    ctx.textContent = '❄️ You are burning a COLD token (+20%) — Aries just fell out of HOT. Maximum burn efficiency this cycle. Best choice for leaderboard points.';
+  } else if (idx === OPP_IDX) {
+    tag.className = 'sim-bonus-tag opp'; tag.textContent = '+10% OPP BONUS';
+    ctx.className = 'sim-context opp';
+    ctx.textContent = '🔮 You are burning an OPPOSITE token (+10%) — Scorpio is 6 signs from HOT. Good efficiency, balanced APY. Strategic middle ground.';
+  } else if (idx === HOT_IDX) {
+    tag.className = 'sim-bonus-tag none'; tag.textContent = 'NO BURN BONUS';
+    ctx.className = 'sim-context hot';
+    ctx.textContent = '🔥 You are burning the HOT token — no burn bonus, but Taurus earns 8% staking APY. Better to stake it than burn it this cycle.';
+  } else {
+    tag.className = 'sim-bonus-tag none'; tag.textContent = 'NO BONUS';
+    ctx.className = 'sim-context none';
+    ctx.textContent = `⚪ ${NAMES[idx]} has no active multiplier this cycle. Consider Aries (COLD ×1.2) or Scorpio (OPP ×1.1) for better efficiency.`;
+  }
+}
+
+renderLeaderboard();
+simulate();
+
+function scheduleBurn() {
+  setTimeout(() => { addBurn(); scheduleBurn(); }, Math.random() * 3000 + 1000);
+}
+scheduleBurn();
+</script>
+</body>
+</html>
